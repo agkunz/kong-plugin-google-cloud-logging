@@ -19,6 +19,23 @@ local function table_keys(t)
   return keys
 end
 
+-- Construct the actual request URL using current request information
+-- This avoids relying on Kong's serialized URL which may contain stale port information
+local function construct_request_url()
+  local scheme = ngx.var.scheme or "http"
+  local host = kong.request.get_header("host") or ngx.var.host or "localhost"
+  local request_uri = ngx.var.request_uri or "/"
+  
+  -- Construct the full URL with actual host header (which includes correct port if non-standard)
+  local url = scheme .. "://" .. host .. request_uri
+  
+  -- logger.debug("Constructed request URL: " .. url .. " (original Kong URL would be from logs.request.url)", "construct_url")
+  return url
+end
+
+-- Expose the function so it can be called from create_log_entry
+_M.construct_request_url = construct_request_url
+
 -- Valid Google Cloud resource types - keep in sync with schema.lua
 local VALID_RESOURCE_TYPES = {
   ["global"] = true,
@@ -271,7 +288,7 @@ function _M.create_log_entry(conf)
     },
     request = {
       requestMethod = logs.request.method,
-      requestUrl = logs.request.url,
+      requestUrl = _M.construct_request_url(),
       requestSize = logs.request.size,
       status = logs.response.status,
       responseSize = logs.response.size,
