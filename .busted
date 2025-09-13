@@ -1,0 +1,10 @@
+-- .busted configuration file
+return {
+  default = {
+    output = "gtest",
+    pattern = "_spec",
+    ROOT = {"."},
+    lpath = "kong/plugins/?.lua;kong/plugins/?/init.lua;tests/?.lua",
+    exclude = {}
+  }
+}

@@ -1,5 +1,5 @@
 package = "kong-plugin-google-cloud-logging"
-version = "0.1.1-1"
+version = "0.1.2-1"
 local pluginName = package:match("^kong%-plugin%-(.+)$")  -- "google-cloud-logging"
 supported_platforms = {"linux", "macosx"}
 

@@ -29,7 +29,7 @@ local function construct_request_url()
   -- Construct the full URL with actual host header (which includes correct port if non-standard)
   local url = scheme .. "://" .. host .. request_uri
   
-  -- logger.debug("Constructed request URL: " .. url .. " (original Kong URL would be from logs.request.url)", "construct_url")
+  logger.debug("Constructed request URL: " .. url .. " (avoiding Kong's internal logs.request.url)", "construct_url")
   return url
 end
 
@@ -300,6 +300,15 @@ function _M.create_log_entry(conf)
     severity = severity,
     labels = entry_labels
   }
+  
+  -- Debug logging to compare URLs (can be useful for troubleshooting the port issue)
+  local constructed_url = entry.request.requestUrl
+  local kong_url = logs.request.url
+  if constructed_url ~= kong_url then
+    logger.info("URL mismatch detected - Using constructed: '" .. constructed_url .. "' instead of Kong's: '" .. kong_url .. "'", "url_fix")
+  else
+    logger.debug("URLs match - constructed: '" .. constructed_url .. "'", "url_debug")
+  end
 
   -- Add request headers if configured
   if logging_options.log_request_headers then
